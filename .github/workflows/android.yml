@@ -5,9 +5,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-  env:
-  ANDROID_SDK_ROOT: /home/runner/Android/Sdk
-  steps:
+steps:
   - uses: actions/checkout@v3
   - uses: actions/setup-python@v4
     with:
