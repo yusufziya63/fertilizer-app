@@ -13,3 +13,7 @@ orientation = portrait
 fullscreen = 0
 
 android.permissions = INTERNET
+
+# Android specific
+android.api = 31
+android.build_tools_version = 33.0.0
