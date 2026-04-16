@@ -29,9 +29,7 @@ jobs:
 
           unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools 
 
-          sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest sudo rsync -a /tmp/cmdline-tools/cmdline-tools/ $ANDROID_SDK_ROOT/cmdline-tools/latest/ 
-
-          sudo chown -R $USER:$USER $ANDROID_SDK_ROOT/cmdline-tools mkdir -p $ANDROID_SDK_ROOT/licenses
+          sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest  sudo rsync -a /tmp/cmdline-tools/cmdline-tools/ $ANDROID_SDK_ROOT/cmdline-tools/latest/  sudo chown -R $USER:$USER $ANDROID_SDK_ROOT/cmdline-tools  mkdir -p $ANDROID_SDK_ROOT/licenses
       - name: Install Android SDK commandline tools
         run: >
           sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
