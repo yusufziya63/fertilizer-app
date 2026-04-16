@@ -2,6 +2,7 @@
 title = FertilizerApp
 package.name = fertilizerapp
 package.domain = org.test
+version = 1.0.0
 
 source.dir = .
 source.include_exts = py
