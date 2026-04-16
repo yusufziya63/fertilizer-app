@@ -27,7 +27,20 @@ jobs:
           sudo rsync -a /tmp/cmdline-tools/cmdline-tools/ $ANDROID_SDK_ROOT/cmdline-tools/latest/
           sudo chown -R $USER:$USER $ANDROID_SDK_ROOT/cmdline-tools
           mkdir -p $ANDROID_SDK_ROOT/licenses
-    - name: Accept Android SDK licenses and install build-tools env: ANDROID_SDK_ROOT: /home/runner/Android/Sdk run: | sudo apt update sudo apt install -y coreutils wget unzip || true SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" if [ ! -x "$SDKMANAGER" ]; then echo "sdkmanager not found; listing cmdline-tools directory:" ls -la "$ANDROID_SDK_ROOT/cmdline-tools" || true ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest" || true ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" || true exit 1 fi yes | "$SDKMANAGER" --sdk_root="${ANDROID_SDK_ROOT}" --licenses "$SDKMANAGER" --sdk_root="${ANDROID_SDK_ROOT}" "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+    - name: Accept Android SDK licenses and install build-tools 
+      env: 
+          ANDROID_SDK_ROOT: /home/runner/Android/Sdk 
+      run: | 
+           sudo apt update 
+           sudo apt install -y coreutils wget unzip || true 
+           SDKMANAGER="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" 
+           if [ ! -x "$SDKMANAGER" ]; then echo "sdkmanager not found; listing 
+           cmdline-tools directory:" ls -la "$ANDROID_SDK_ROOT/cmdline-tools" 
+           || true ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest" || true ls - 
+           la "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" || true exit 1 fi 
+           yes | "$SDKMANAGER" --sdk_root="${ANDROID_SDK_ROOT}" --licenses 
+           "$SDKMANAGER" --sdk_root="${ANDROID_SDK_ROOT}" "platform-tools" 
+           "platforms;android-31" "build-tools;37.0.0"
     - name: Clean
       run: buildozer android clean || true
     - name: Build
