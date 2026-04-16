@@ -5,22 +5,21 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-steps:
-  - name: Repo çek
-    uses: actions/checkout@v3
-  - name: Python kur
-    uses: actions/setup-python@v4
-    with:
+  steps:
+    - name: Repo çek
+      uses: actions/checkout@v3
+    - name: Python kur
+      uses: actions/setup-python@v4
+      with:
         python-version: 3.11
-
-  - name: Install deps
-    run: |
+    - name: Install deps
+      run: |
         sudo apt update
         sudo apt install -y git zip unzip openjdk-1-jdk  rsync
         pip install --upgrade pip
         pip install buildozer==1.5.0 cython
-  - name: Install Android SDK commandline tools
-    run: |
+    - name: Install Android SDK commandline tools
+      run: |
           sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
           curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
           unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
@@ -28,19 +27,18 @@ steps:
           sudo rsync -a /tmp/cmdline-tools/cmdline-tools/ $ANDROID_SDK_ROOT/cmdline-tools/latest/
           sudo chown -R $USER:$USER $ANDROID_SDK_ROOT/cmdline-tools
           mkdir -p $ANDROID_SDK_ROOT/licenses
-  - name: Accept Android SDK licenses and install build-tools
-    env:
+    - name: Accept Android SDK licenses and install build-tools
+      env:
         PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:${{ env.PATH }}
         run: |
           yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses 
           sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
-  - name: Clean
-    run: buildozer android clean || true
-  - name: Build
-    run: buildozer -v android debug
-    
-  - name: Upload APK artifact
-    uses: actions/upload-artifact@v4
-    with:
-          name: fertilizer-apk
-          path: bin/*.apk
+    - name: Clean
+      run: buildozer android clean || true
+    - name: Build
+      run: buildozer -v android debug
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: fertilizer-apk
+        path: bin/*.apk
