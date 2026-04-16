@@ -5,7 +5,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-  steps:
+    steps:
     - name: Repo çek
       uses: actions/checkout@v3
     - name: Python kur
@@ -29,8 +29,8 @@ jobs:
           mkdir -p $ANDROID_SDK_ROOT/licenses
     - name: Accept Android SDK licenses and install build-tools
       env:
-        PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:${{ env.PATH }}
-        run: |
+          PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:${{ env.PATH }}
+      run: |
           yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses 
           sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
     - name: Clean
