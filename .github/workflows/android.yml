@@ -1,4 +1,4 @@
-name: Build APK (Use Build-Tools 33)
+name: Build APK (Debug — Clean + Verify)
 
 on:
   push:
@@ -26,11 +26,17 @@ jobs:
           python -m pip install buildozer==1.5.0 cython
         shell: bash
 
+      - name: Clean old Android SDK and buildozer cache
+        run: |
+          rm -rf ~/.buildozer/android
+          sudo rm -rf "$ANDROID_SDK_ROOT"
+          mkdir -p "$ANDROID_SDK_ROOT"
+        shell: bash
+
       - name: Prepare ANDROID_SDK_ROOT
         run: |
-          sudo mkdir -p "$ANDROID_SDK_ROOT"
+          sudo mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           sudo chown -R "$(id -u):$(id -g)" "$ANDROID_SDK_ROOT"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           mkdir -p "$ANDROID_SDK_ROOT/licenses"
         shell: bash
 
@@ -52,7 +58,6 @@ jobs:
             ls -la "$ANDROID_SDK_ROOT/cmdline-tools" || true
             exit 1
           fi
-          # İlgili paketleri yükle (build-tools 33 kullanılıyor)
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --install "platform-tools" "platforms;android-31" "build-tools;33.0.0" || true
         shell: bash
 
@@ -66,10 +71,26 @@ jobs:
           sudo chown -R "$(id -u):$(id -g)" "$ANDROID_SDK_ROOT/licenses"
         shell: bash
 
-      - name: Verify build-tools installed
+      - name: Verify installed SDKs
         run: |
-          echo "Build-tools dirs:"
-          ls -la "$ANDROID_SDK_ROOT/build-tools" || ls -la "$ANDROID_SDK_ROOT/platforms" || true
+          echo "SDK root: $ANDROID_SDK_ROOT"
+          ls -la "$ANDROID_SDK_ROOT" || true
+          ls -la "$ANDROID_SDK_ROOT/build-tools" || true
+          ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" || true
+          "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --list || true
+        shell: bash
+
+      - name: Force buildozer to use build-tools 33
+        run: |
+          # ensure buildozer.spec exists and force the build_tools version
+          if [ -f buildozer.spec ]; then
+            sed -i '/^android.build_tools_version/ d' buildozer.spec || true
+            echo "android.build_tools_version = 33.0.0" >> buildozer.spec
+            sed -n '1,200p' buildozer.spec
+          else
+            echo "buildozer.spec not found in repo root"
+            exit 1
+          fi
         shell: bash
 
       - name: Clean buildozer
@@ -77,9 +98,10 @@ jobs:
           buildozer android clean || true
         shell: bash
 
-      - name: Build APK
+      - name: Build APK (verbose)
         run: |
-          buildozer -v android debug
+          buildozer -v android debug 2>&1 | tee buildozer-output.log
+          tail -n 200 buildozer-output.log
         shell: bash
 
       - name: Upload APK artifact
