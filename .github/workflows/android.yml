@@ -1,0 +1,34 @@
+name: Build APK (Final Fix)
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: 3.10
+
+    - name: Install deps
+      run: |
+        sudo apt update
+        sudo apt install -y git zip unzip openjdk-17-jdk
+        pip install --upgrade pip
+        pip install buildozer==1.5.0 cython
+
+    - name: Clean
+      run: buildozer android clean || true
+
+    - name: Build
+      run: buildozer -v android debug
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: apk
+        path: bin/*.apk
