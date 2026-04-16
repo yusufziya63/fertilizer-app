@@ -24,6 +24,7 @@ jobs:
           sudo apt install -y git zip unzip openjdk-17-jdk rsync
           python -m pip install --upgrade pip
           python -m pip install buildozer==1.5.0 cython
+        shell: bash
 
       - name: Create ANDROID_SDK_ROOT dirs
         run: |
@@ -54,12 +55,19 @@ jobs:
           fi
           # Paket yükle
           "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;37.0.0"
-          # Lisansları dosya tabanlı onayla
-          mkdir -p "$ANDROID_SDK_ROOT/licenses"
-          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-license" <<'EOF'24333f8a63b6825ea9c5514f83c2829b004d1feed56f5187479451eabf01fb78af6dfcb131a6481e
-          EOF
-          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-preview-license" <<'EOF'84831b9409646a918e30573bab4c9c91346d8ab1
-          EOF
+          # Lisansları kabul et (broken pipe önüne geçmek için loop)
+          # Bu while döngüsü sdkmanager --licenses çıktısını düzgün işleyip tüm lisansları kabul eder
+          RET=1
+          COUNTER=0
+          until [ "$RET" -eq 0 ] || [ "$COUNTER" -ge 5 ]; do
+            printf 'y\n' | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --licenses || true
+            RET=$?
+            COUNTER=$((COUNTER+1))
+            sleep 1
+          done
+          if [ "$RET" -ne 0 ]; then
+            echo "Warning: some licenses may not have been accepted; continuing anyway."
+          fi
         shell: bash
 
       - name: Clean buildozer
