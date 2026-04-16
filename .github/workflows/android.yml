@@ -62,17 +62,13 @@ jobs:
         run: |
           mkdir -p "$ANDROID_SDK_ROOT/licenses"
           # Bilinen yaygın lisans hash'leri (çoğu CI ortamında yeterli olur)
-          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-license" <<'EOF'
-24333f8a63b6825ea9c5514f83c2829b004d1fee
-d56f5187479451eabf01fb78af6dfcb131a6481e
-EOF
-          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-preview-license" <<'EOF'
-84831b9409646a918e30573bab4c9c91346d8ab1
-EOF
-          # Ek lisanslar (bazı build-tools paketleri için gerekebilir)
-          cat > "$ANDROID_SDK_ROOT/licenses/intel-android-extra-license" <<'EOF'
-d1a0f0b4e4d3e1a9a0a0b0c0d0e0f01020304050
-EOF
+          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-license" <<'EOF'24333f8a63b6825ea9c5514f83c2829b004d1feed56f5187479451eabf01fb78af6dfcb131a6481e
+          EOF
+          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-preview-license" <<'EOF'84831b9409646a918e30573bab4c9c91346d8ab1
+          EOF
+          # Ek lisanslar (bazı build-tools paketleri için gerekebilir)      
+          cat > "$ANDROID_SDK_ROOT/licenses/intel-android-extra-license" <<'EOF'd1a0f0b4e4d3e1a9a0a0b0c0d0e0f01020304050
+          EOF
           sudo chown -R "$(id -u):$(id -g)" "$ANDROID_SDK_ROOT/licenses"
         shell: bash
 
