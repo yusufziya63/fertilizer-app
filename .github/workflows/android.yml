@@ -1,34 +1,43 @@
-name: Build APK (Final Fix)
+steps:
+- uses: actions/checkout@v3
 
-on:
-  push:
-  workflow_dispatch:
+- uses: actions/setup-python@v4
+  with:
+    python-version: 3.11
 
-jobs:
-  build:
-    runs-on: ubuntu-22.04
+- name: Install deps
+  run: |
+    sudo apt update
+    sudo apt install -y git zip unzip openjdk-17-jdk
+    pip install --upgrade pip
+    pip install buildozer==1.5.0 cython
 
-    steps:
-    - uses: actions/checkout@v3
+- name: Install Android SDK commandline tools
+  env:
+    ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
+  run: |
+    sudo mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools
+    curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
+    unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
+    mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
+    mv /tmp/cmdline-tools/cmdline-tools/* \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
+    mkdir -p \$ANDROID\_SDK\_ROOT/licenses
 
-    - uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
+- name: Accept Android SDK licenses and install build-tools
+  env:
+    ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
+    PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:\${{ env.PATH }}
+  run: |
+    yes | sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} --licenses
+    sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
 
-    - name: Install deps
-      run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk
-        pip install --upgrade pip
-        pip install buildozer==1.5.0 cython
+- name: Clean
+  run: buildozer android clean || true
 
-    - name: Clean
-      run: buildozer android clean || true
+- name: Build
+  run: buildozer -v android debug
 
-    - name: Build
-      run: buildozer -v android debug
-
-    - uses: actions/upload-artifact@v4
-      with:
-        name: apk
-        path: bin/*.apk
+- uses: actions/upload-artifact@v4
+  with:
+    name: apk
+    path: bin/*.apk
