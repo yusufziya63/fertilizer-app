@@ -1,4 +1,4 @@
-name: Build APK (Stable)
+name: Build APK (FINAL - Stable)
 
 on:
   push:
@@ -35,7 +35,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install buildozer==1.5.0 cython==0.29.33
 
-      - name: 🧹 Clean old buildozer & SDK
+      - name: 🧹 Clean old SDK & buildozer
         run: |
           rm -rf ~/.buildozer
           rm -rf $ANDROID_SDK_ROOT
@@ -49,7 +49,7 @@ jobs:
           unzip -q tools.zip
           mv cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-      - name: 🔧 Setup SDK + Accept Licenses
+      - name: 🔧 Install SDK (NO FAIL ALLOWED)
         run: |
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
 
@@ -60,12 +60,23 @@ jobs:
             "platforms;android-31" \
             "build-tools;30.0.3"
 
-      - name: 🔍 Verify SDK
+      - name: 🔍 VERIFY SDK + AIDL
         run: |
+          echo "=== SDK ROOT ==="
           ls -la $ANDROID_SDK_ROOT
+
+          echo "=== BUILD TOOLS ==="
           ls -la $ANDROID_SDK_ROOT/build-tools
 
-      - name: ⚙️ Fix buildozer.spec
+          echo "=== AIDL SEARCH ==="
+          find $ANDROID_SDK_ROOT -name aidl || true
+
+      - name: 🔗 FIX Buildozer SDK PATH (CRITICAL)
+        run: |
+          mkdir -p ~/.buildozer/android/platform
+          ln -s $ANDROID_SDK_ROOT ~/.buildozer/android/platform/android-sdk
+
+      - name: ⚙️ FIX buildozer.spec
         run: |
           if [ -f buildozer.spec ]; then
             sed -i '/^android.api/d' buildozer.spec
@@ -76,16 +87,19 @@ jobs:
             echo "android.minapi = 21" >> buildozer.spec
             echo "android.build_tools_version = 30.0.3" >> buildozer.spec
           else
-            echo "buildozer.spec not found!"
+            echo "buildozer.spec NOT FOUND"
             exit 1
           fi
 
       - name: 🚀 Build APK
         run: |
-          export PATH=$ANDROID_SDK_ROOT/platform-tools:$PATH
+          export ANDROIDSDK=$ANDROID_SDK_ROOT
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
+          export PATH=$ANDROID_SDK_ROOT/platform-tools:$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+
           buildozer android debug
 
-      - name: 📦 Upload APK Artifact
+      - name: 📦 Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: apk
