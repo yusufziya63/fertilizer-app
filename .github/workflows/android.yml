@@ -30,7 +30,6 @@ jobs:
           mkdir -p "$ANDROID_SDK_ROOT"
           sudo mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           mkdir -p "$ANDROID_SDK_ROOT/licenses"
-        # keep ownership so runner user can write into SDK dir
         shell: bash
 
       - name: Install Android SDK commandline tools
@@ -53,8 +52,14 @@ jobs:
             ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" || true
             exit 1
           fi
-          yes | "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" --licenses
+          # Paket yükle
           "$SDKMANAGER" --sdk_root="$ANDROID_SDK_ROOT" "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+          # Lisansları dosya tabanlı onayla
+          mkdir -p "$ANDROID_SDK_ROOT/licenses"
+          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-license" <<'EOF'24333f8a63b6825ea9c5514f83c2829b004d1feed56f5187479451eabf01fb78af6dfcb131a6481e
+          EOF
+          cat > "$ANDROID_SDK_ROOT/licenses/android-sdk-preview-license" <<'EOF'84831b9409646a918e30573bab4c9c91346d8ab1
+          EOF
         shell: bash
 
       - name: Clean buildozer
