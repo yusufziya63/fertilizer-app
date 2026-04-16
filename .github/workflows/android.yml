@@ -23,6 +23,17 @@ jobs:
           pip install buildozer cython
       - name: Install Android SDK commandline tools
         run: >
+          sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools curl -sSL -o
+          /tmp/cmdline-tools.zip
+          https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip 
+
+          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools 
+
+          sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest sudo rsync -a /tmp/cmdline-tools/cmdline-tools/ $ANDROID_SDK_ROOT/cmdline-tools/latest/ 
+
+          sudo chown -R $USER:$USER $ANDROID_SDK_ROOT/cmdline-tools mkdir -p $ANDROID_SDK_ROOT/licenses
+      - name: Install Android SDK commandline tools
+        run: >
           sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
 
           curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
