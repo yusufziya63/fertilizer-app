@@ -7,7 +7,7 @@ version = 1.0.0
 source.dir = .
 source.include_exts = py
 
-requirements = python3,kivy,pulp,numpy,pandas
+requirements = python3,kivy,pulp,numpy
 
 orientation = portrait
 fullscreen = 0
