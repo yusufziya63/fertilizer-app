@@ -1,43 +1,50 @@
+---
+name: Build APK (Final Fix)
+on:
+  push: null
+  workflow_dispatch: null
+jobs:
+  build:
+    runs-on: ubuntu-22.04
 steps:
-- uses: actions/checkout@v3
+  - uses: actions/checkout@v3
+  - uses: actions/setup-python@v4
+    with:
+      python-version: 3.11
+  - name: Install deps
+    run: |
+      sudo apt update
+      sudo apt install -y git zip unzip openjdk-17-jdk
+      pip install --upgrade pip
+      pip install buildozer==1.5.0 cython
+  - name: Install Android SDK commandline tools
+    env:
+      ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
+    run: >
+      sudo mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools
 
-- uses: actions/setup-python@v4
-  with:
-    python-version: 3.11
+      curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
 
-- name: Install deps
-  run: |
-    sudo apt update
-    sudo apt install -y git zip unzip openjdk-17-jdk
-    pip install --upgrade pip
-    pip install buildozer==1.5.0 cython
+      unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
 
-- name: Install Android SDK commandline tools
-  env:
-    ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
-  run: |
-    sudo mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools
-    curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
-    unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
-    mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
-    mv /tmp/cmdline-tools/cmdline-tools/* \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
-    mkdir -p \$ANDROID\_SDK\_ROOT/licenses
+      mkdir -p \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
 
-- name: Accept Android SDK licenses and install build-tools
-  env:
-    ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
-    PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:\${{ env.PATH }}
-  run: |
-    yes | sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} --licenses
-    sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+      mv /tmp/cmdline-tools/cmdline-tools/* \$ANDROID\_SDK\_ROOT/cmdline-tools/latest
 
-- name: Clean
-  run: buildozer android clean || true
+      mkdir -p \$ANDROID\_SDK\_ROOT/licenses
+  - name: Accept Android SDK licenses and install build-tools
+    env:
+      ANDROID\_SDK\_ROOT: /home/runner/Android/Sdk
+      PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:\${{ env.PATH }}
+    run: >
+      yes | sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} --licenses
 
-- name: Build
-  run: buildozer -v android debug
-
-- uses: actions/upload-artifact@v4
-  with:
-    name: apk
-    path: bin/*.apk
+      sdkmanager --sdk\_root=\${ANDROID\_SDK\_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+  - name: Clean
+    run: buildozer android clean || true
+  - name: Build
+    run: buildozer -v android debug
+  - uses: actions/upload-artifact@v4
+    with:
+      name: apk
+      path: bin/*.apk
