@@ -16,4 +16,5 @@ android.permissions = INTERNET
 
 # Android specific
 android.api = 31
-android.build_tools_version = 33.0.0
+Aaandroid.minapi = 21
+android.build_tools_version = 30.0.3
