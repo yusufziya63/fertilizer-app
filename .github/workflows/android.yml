@@ -1,42 +1,56 @@
+---
 name: Build APK (Stable)
-
 on:
-  push:
-  workflow_dispatch:
-
+  push: null
+  workflow_dispatch: null
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Repo çek
-      uses: actions/checkout@v3
+      - name: Repo çek
+        uses: actions/checkout@v3
+      - name: Python kur
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: Sistem paketleri
+        run: |
+          sudo apt update
+          sudo apt install -y git zip unzip openjdk-17-jdk
+      - name: Python paketleri
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython
+      - name: Install Android SDK commandline tools
+        run: >
+          sudo mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
 
-    - name: Python kur
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.11
+          curl -sSL -o /tmp/cmdline-tools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386\_latest.zip
 
-    - name: Sistem paketleri
-      run: |
-        sudo apt update
-        sudo apt install -y git zip unzip openjdk-17-jdk
+          unzip -q /tmp/cmdline-tools.zip -d /tmp/cmdline-tools
 
-    - name: Python paketleri
-      run: |
-        pip install --upgrade pip
-        pip install buildozer cython
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-    - name: Buildozer init
-      run: |
-        buildozer init || true
+          mv /tmp/cmdline-tools/cmdline-tools/* $ANDROID_SDK_ROOT/cmdline-tools/latest
 
-    - name: APK build
-      run: |
-        buildozer -v android debug
+          mkdir -p $ANDROID_SDK_ROOT/licenses
+      - name: Accept Android SDK licenses and install build-tools
+        env:
+          PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:${{ env.PATH }}
+        run: >
+          yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses
 
-    - name: APK yükle
-      uses: actions/upload-artifact@v4
-      with:
-        name: apk
-        path: bin/*.apk
+          sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+      - name: Clean
+        run: buildozer android clean || true
+      - name: Buildozer init
+        run: |
+          buildozer init || true
+      - name: APK build
+        run: |
+          buildozer -v android debug
+      - name: APK yükle
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: bin/*.apk
