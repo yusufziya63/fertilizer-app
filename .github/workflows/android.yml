@@ -29,16 +29,21 @@ jobs:
           mkdir -p $ANDROID_SDK_ROOT/licenses
     - name: Accept Android SDK licenses and install build-tools
       env:
+          ANDROID_SDK_ROOT: /home/runner/Android/Sdk
           PATH: /home/runner/Android/Sdk/cmdline-tools/latest/bin:${{ env.PATH }}
-      run: |
-          yes | sdkmanager --sdk_root=${ANDROID_SDK_ROOT} --licenses 
-          sdkmanager --sdk_root=${ANDROID_SDK_ROOT} "platform-tools" "platforms;android-31" "build-tools;37.0.0"
-    - name: Clean
-      run: buildozer android clean || true
-    - name: Build
-      run: buildozer -v android debug
-    - name: Upload APK artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: fertilizer-apk
-        path: bin/*.apk
+      run: | 
+            sudo apt update sudo apt install -y coreutils wget unzip || true verify sdkmanager exists
+            if [ ! -f "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" ]; 
+            then echo "sdkmanager not found; 
+            listing cmdline-tools directory:" ls -la "$ANDROID_SDK_ROOT/cmdline-tools" || true ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest" || true ls -la "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" || true exit 1 fi
+            accept licenses and install packages
+            yes | "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" --licenses "${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin/sdkmanager" --sdk_root="${ANDROID_SDK_ROOT}" "platform-tools" "platforms;android-31" "build-tools;37.0.0"
+            - name: Clean
+            run: buildozer android clean || true
+            - name: Build
+            run: buildozer -v android debug
+            - name: Upload APK artifact
+            uses: actions/upload-artifact@v4
+            with:
+              name: fertilizer-apk
+            path: bin/*.apk
