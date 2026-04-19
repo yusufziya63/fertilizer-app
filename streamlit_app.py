@@ -66,12 +66,12 @@ with col2:
 # ---------------- HEDEF VERİM -> NUTRIENTS FONKSİYONLARI ----------------
 def calculate_nutrients(target_yield_kg_per_da):
     per_kg = {
-        "N": 0.012,
+       "N": 0.020,
         "P": 0.036,
-        "K": 0.02,
-        "Ca": 0.008,
-        "Mg": 0.003,
-        "S": 0.004
+        "K": 0.040,
+        "Ca": 0.014,
+        "Mg": 0.005,
+        "S": 0.002
     }
     nutrients = {k: round(v * target_yield_kg_per_da, 3) for k, v in per_kg.items()}
     nutrients["P2O5_eq_kg_per_da"] = round(nutrients["P"] * 2.29, 3)
