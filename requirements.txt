@@ -2,4 +2,4 @@ streamlit
 pulp
 numpy
 pandas
-sklearn 
+scikit-learn
