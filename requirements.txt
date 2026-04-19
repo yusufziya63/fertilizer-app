@@ -3,4 +3,3 @@ pulp
 numpy
 pandas
 sklearn 
-LinearRegression
