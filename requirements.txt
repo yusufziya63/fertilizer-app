@@ -2,3 +2,5 @@ streamlit
 pulp
 numpy
 pandas
+sklearn 
+LinearRegression
