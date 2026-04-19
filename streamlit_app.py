@@ -162,27 +162,49 @@ st.write("Mevcut hedef nutrientler (kg/da):",
 # ---------------- TOPRAK ----------------
 st.subheader("🌍 Toprak Analizi")
 soil_N = st.number_input("Toprak N", 40.0, key="soil_N_input")
-soil_P = st.number_input("Toprak P", 10.0, key="soil_P_input")
-soil_K = st.number_input("Toprak K", 120.0, key="soil_K_input")
-soil_Ca = st.number_input("Toprak Ca", 1500.0, key="soil_Ca_input")
-soil_Mg = st.number_input("Toprak Mg", 120.0, key="soil_Mg_input")
+soil_P = st.number_input("Toprak P", 5.0, key="soil_P_input")
+soil_K = st.number_input("Toprak K", 50.0, key="soil_K_input")
+soil_Ca = st.number_input("Toprak Ca", 500.0, key="soil_Ca_input")
+soil_Mg = st.number_input("Toprak Mg", 50.0, key="soil_Mg_input")
 
-def classify(v,l,o,h):
-    if v < l: return "low"
-    elif v < o: return "medium"
-    elif v < h: return "good"
-    else: return "high"
+# Eşikler ve çarpanlar: ihtiyaca göre kolayca değiştirilebilir
+Ca_thresholds = {
+    "low": 1000.0,   # < low
+    "medium": 2000.0, # < medium
+    "good": 4000.0    # < good, else high
+}
+Ca_multipliers = {
+    "low": 1.3,
+    "medium": 1.1,
+    "good": 0.9,
+    "high": 0.5
+}
 
-def mult(s):
-    return {"low":1.3,"medium":1.1,"good":0.9,"high":0.5}[s]
+def classify_with_thresholds(v, thresholds):
+    l = thresholds["low"]
+    o = thresholds["medium"]
+    h = thresholds["good"]
+    if v < l:
+        return "low"
+    elif v < o:
+        return "medium"
+    elif v < h:
+        return "good"
+    else:
+        return "high"
+
+def mult_from_dict(s, mults):
+    return mults[s]
 
 if st.checkbox("🤖 Toprağa göre ayarla", key="soil_adjust_chk"):
     st.session_state["N"] = float(st.session_state.get("N", N)) * mult(classify(soil_N,30,60,100))
     st.session_state["P"] = float(st.session_state.get("P", P)) * mult(classify(soil_P,8,20,40))
     st.session_state["K"] = float(st.session_state.get("K", K)) * mult(classify(soil_K,80,150,250))
-    st.session_state["Ca"] = float(st.session_state.get("Ca", Ca)) * mult(classify(soil_Ca,1000,2000,4000))
+    ca_class = classify_with_thresholds(soil_Ca, Ca_thresholds)
+    st.session_state["Ca"] = float(st.session_state.get("Ca", Ca)) * mult_from_dict(ca_class, Ca_multipliers)
     st.session_state["Mg"] = float(st.session_state.get("Mg", Mg)) * mult(classify(soil_Mg,80,150,300))
     st.success("Toprağa göre güncellendi")
+
 
 # ---------------- GÜBRE DB ----------------
 fert_db = {
